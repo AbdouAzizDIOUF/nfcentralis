@@ -13,5 +13,5 @@ public class UserForm {
     private String mobile;
     private String email;
     private String password;
-    private Long chefID;
+    private Long chefID=0L;
 }

@@ -1,10 +1,7 @@
 package com.example.springnfc.projection;
 
 
-import com.example.springnfc.entity.Client;
-import com.example.springnfc.entity.Installation;
-import com.example.springnfc.entity.Provider;
-import com.example.springnfc.entity.Utilisateur;
+import com.example.springnfc.entity.*;
 import org.springframework.data.rest.core.config.Projection;
 
 import java.util.List;
@@ -20,10 +17,12 @@ public interface ClientProjection {
     String getPhone();
     String getEmail();
     String getDescription();
+    String getLogo();
 
     Utilisateur getUserOrderer();
     Utilisateur getUtilisateur();
 
     List<Installation> getInstallations();
+    List<Orderer> getOrderer();
 
 }

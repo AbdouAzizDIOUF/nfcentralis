@@ -38,9 +38,14 @@ public class Installation implements Serializable {
     @ManyToOne
     private Utilisateur utilisateur;
 
+    @ManyToOne
+    private Orderer orderer;
+
     @OneToMany(mappedBy="installation")
     private Collection<InterventionProvider> interventionList;
 
     @OneToMany(mappedBy="installation")
     private Collection<Intervention> interventions;
+
+
 }

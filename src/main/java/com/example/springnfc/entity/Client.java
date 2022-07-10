@@ -40,4 +40,7 @@ public class Client implements Serializable {
 
     @OneToOne
     private Utilisateur userOrderer;
+
+    @ManyToOne
+    private Orderer orderer;
 }

@@ -10,7 +10,6 @@ public class Role {
 	private Integer id;
 
 	@Enumerated(EnumType.STRING)
-	@Column(length = 20)
 	private ERole name;
 
 	public Role() {
@@ -19,6 +18,9 @@ public class Role {
 
 	public Role(ERole name) {
 		this.name = name;
+	}
+
+	public Role(String e) {
 	}
 
 	public Integer getId() {

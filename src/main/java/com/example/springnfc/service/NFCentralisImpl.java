@@ -7,9 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Transactional
@@ -23,8 +21,9 @@ public class NFCentralisImpl implements IInitNFCentralis
     private PasswordEncoder encoder;
     private final RoleRepository roleRepository;
     private final InstallationRepository installationRepository;
+    private final NfcentralisRepository nfcentralisRepository;
 
-    public NFCentralisImpl(OrdererRepository ordererRepository, ProviderRepository providerRepository, UtilisateurRepository utilisateurRepository, ClientRepository clientRepository, PasswordEncoder encoder, RoleRepository roleRepository, InstallationRepository installationRepository) {
+    public NFCentralisImpl(NfcentralisRepository nfcentralisRepository,OrdererRepository ordererRepository, ProviderRepository providerRepository, UtilisateurRepository utilisateurRepository, ClientRepository clientRepository, PasswordEncoder encoder, RoleRepository roleRepository, InstallationRepository installationRepository) {
         this.ordererRepository = ordererRepository;
         this.providerRepository = providerRepository;
         this.utilisateurRepository = utilisateurRepository;
@@ -32,6 +31,7 @@ public class NFCentralisImpl implements IInitNFCentralis
         this.encoder = encoder;
         this.roleRepository = roleRepository;
         this.installationRepository = installationRepository;
+        this.nfcentralisRepository = nfcentralisRepository;
     }
 
 
@@ -70,47 +70,46 @@ public class NFCentralisImpl implements IInitNFCentralis
     }
 
     @Override
+    public void initNfcentralis(){
+        Faker faker = new Faker(new Locale("fr-FR"));
+        Nfcentralis provider = new Nfcentralis();
+        provider.setName(faker.company().name());
+        provider.setAdress(faker.address().streetName());
+        provider.setCity(faker.address().city());
+        provider.setZipcode(faker.address().buildingNumber());
+        provider.setPhone(faker.phoneNumber().phoneNumber());
+        provider.setEmail(faker.internet().emailAddress());
+        provider.setDescription(faker.lorem().fixedString(100));
+        provider.setLogo(faker.company().logo());
+        nfcentralisRepository.save(provider);
+    }
+
+    @Override
     public void initRole() {
-        Role role = new Role();
-        role.setName(ERole.ROLE_TRAVAILLEUR);
-        roleRepository.save(role);
-        Role role2 = new Role();
-        role2.setName(ERole.ROLE_CHEF);
-        roleRepository.save(role2);
-        Role role3 = new Role();
-        role3.setName(ERole.ROLE_ADJOIN_CHEF);
+        List<ERole> roles = new ArrayList<>();
+        roles.add(ERole.ROLE_CLIENT);
+        roles.add(ERole.ROLE_ADMIN);
+        roles.add(ERole.ROLE_TRAVAILLEUR);
+        roles.add(ERole.ROLE_CHEF_PROVIDER);
+        roles.add(ERole.ROLE_ADJOINT_PROVIDER);
+        roles.add(ERole.ROLE_CHEF_ORDERER);
+        roles.add(ERole.ROLE_ADJOINT_ORDERER);
 
-
-        Role role4 = new Role();
-        role4.setName(ERole.ROLE_MODERATOR);
-        roleRepository.save(role4);
-
-        Role role5 = new Role();
-        role5.setName(ERole.ROLE_ADMIN);
-        roleRepository.save(role5);
-
-        Role role6 = new Role();
-        role6.setName(ERole.ROLE_USER);
-        roleRepository.save(role6);
-
-        roleRepository.save(role3);
-        Set <Role> roles = new HashSet();
-        roles.add(role);
-
-        roleRepository.save(role);
-
+        roles.forEach(e->{
+            roleRepository.save(new Role(e));
+        });
     }
 
     @Override
     public void initUtilisateurOrderers() {
         Set<Role> roles = new HashSet<>();
 
-        Role userRole = roleRepository.findByName(ERole.ROLE_TRAVAILLEUR)
+        Role userRole = roleRepository.findByName(ERole.ROLE_ADJOINT_ORDERER)
                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
         roles.add(userRole);
 
         ordererRepository.findAll().forEach(orderer -> {
-            for (int i=0; i<5; i++){
+
                 Faker faker = new Faker(new Locale("fr-FR"));
                 Utilisateur utilisateur = new Utilisateur();
                 utilisateur.setFirstName(faker.name().firstName());
@@ -122,7 +121,7 @@ public class NFCentralisImpl implements IInitNFCentralis
                 utilisateur.setRoles(roles);
                 utilisateur.setCompany(orderer);
                 utilisateurRepository.save(utilisateur);
-            }
+
         });
     }
 
@@ -159,7 +158,7 @@ public class NFCentralisImpl implements IInitNFCentralis
 
             Set<Role> roles = new HashSet<>();
 
-            Role userRole = roleRepository.findByName(ERole.ROLE_CHEF)
+            Role userRole = roleRepository.findByName(ERole.ROLE_CHEF_ORDERER)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
 
@@ -183,7 +182,31 @@ public class NFCentralisImpl implements IInitNFCentralis
         providerRepository.findAll().forEach(provider -> {
             Set<Role> roles = new HashSet<>();
 
-            Role userRole = roleRepository.findByName(ERole.ROLE_CHEF)
+            Role userRole = roleRepository.findByName(ERole.ROLE_CHEF_PROVIDER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+
+            Faker faker = new Faker(new Locale("fr-FR"));
+            Utilisateur utilisateur = new Utilisateur();
+            utilisateur.setFirstName(faker.name().firstName());
+            utilisateur.setLastName(faker.name().lastName());
+            utilisateur.setEmail(faker.internet().emailAddress());
+            utilisateur.setMobile(faker.phoneNumber().phoneNumber());
+            utilisateur.setUserName(faker.name().username());
+            utilisateur.setPassword(encoder.encode("passer2022"));
+            utilisateur.setCompany(provider);
+            utilisateur.setRoles(roles);
+            utilisateurRepository.save(utilisateur);
+
+        });
+    }
+
+    @Override
+    public void initAdmin() {
+        nfcentralisRepository.findAll().forEach(provider -> {
+            Set<Role> roles = new HashSet<>();
+
+            Role userRole = roleRepository.findByName(ERole.ROLE_ADMIN)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
 
@@ -204,7 +227,7 @@ public class NFCentralisImpl implements IInitNFCentralis
 
     @Override
     public void initClient() {
-        for (int i=0; i<5; i++){
+        for (int i=0; i<=2; i++){
             Faker faker = new Faker(new Locale("fr-FR"));
             Client client = new Client();
             System.out.printf(faker.company().logo());

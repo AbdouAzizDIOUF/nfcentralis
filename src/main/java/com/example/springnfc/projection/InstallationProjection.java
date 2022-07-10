@@ -1,9 +1,6 @@
 package com.example.springnfc.projection;
 
-import com.example.springnfc.entity.Client;
-import com.example.springnfc.entity.Installation;
-import com.example.springnfc.entity.Provider;
-import com.example.springnfc.entity.Utilisateur;
+import com.example.springnfc.entity.*;
 import org.springframework.data.rest.core.config.Projection;
 
 import java.util.Date;
@@ -22,4 +19,5 @@ public interface InstallationProjection {
 
     Client getClient();
     Utilisateur getUtilisateur();
+    Orderer getOrderer();
 }
