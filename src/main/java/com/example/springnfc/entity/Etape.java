@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -21,11 +22,13 @@ public class Etape implements Serializable {
     private Long id;
     @Lob
     private String comment;
-    private String data;
-    private String data2;
+    private String[] data;
+
     private String validation;
     private String internal_validation;
 
     @ManyToOne
     private Intervention intervention;
+    @OneToOne
+    private Client client;
 }

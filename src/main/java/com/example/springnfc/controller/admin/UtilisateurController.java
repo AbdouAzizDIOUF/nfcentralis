@@ -43,7 +43,7 @@ public class UtilisateurController {
     @PostMapping(path = "/creerAdmin")
    /* @PreAuthorize("hasRole('admin')")*/
     @Transactional
-    public Utilisateur createAdminUser(@RequestBody UserForm user){
+    public Utilisateur createAdminUser(@RequestBody UserForm user) throws MessagingException, IOException {
         Utilisateur utilisateur = new Utilisateur();
         Set<Role> roles = new HashSet<>();
         Role userRole = roleRepository.findByName(ERole.ROLE_ADMIN)
@@ -58,7 +58,7 @@ public class UtilisateurController {
         utilisateur.setUserName(user.getUserName());
         utilisateur.setCompany(nfcentralis);
         utilisateur.setRoles(roles);
-
+        this.mailSenderService.sendmail(user);
         return userRepository.save(utilisateur);
 
     }

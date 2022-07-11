@@ -34,7 +34,6 @@ public class InterventionController {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('CHEF')")
     @GetMapping(path = "/a-intervenir/{idUser}", produces="application/json")
     public List<InterventionProvider> getIntervention(@PathVariable("idUser") Long id){
         Company company = utilisateurRepository.findById(id).get().getCompany();
@@ -52,7 +51,28 @@ public class InterventionController {
             i.setTitle(e.getInstallation().getTitle());
             i.setImage(e.getInstallation().getImage());
             i.setDescription(e.getInstallation().getDescription());
+            i.setDescription(e.getInstallation().getDescription());
+            i.setAdress(e.getInstallation().getAdress());
+            i.setZipcode(e.getInstallation().getZipcode());
+            i.setCity(e.getInstallation().getCity());
+
+            interventionProvider.setDescription(e.getDescription());
             interventionProvider.setInstallation(i);
+            interventionProvider.setEstAttribue(e.getEstAttribue());
+            InterventionProviderTravailleur ipt2 =  iptRepository.findByInterventionProvider(e);
+            Utilisateur u = new Utilisateur();
+            if (ipt2 != null){
+                u.setId(ipt2.getTravailleur().getId());
+                u.setFirstName(ipt2.getTravailleur().getFirstName());
+                u.setLastName(ipt2.getTravailleur().getLastName());
+                u.setEmail(ipt2.getTravailleur().getEmail());
+                ipt2.setTravailleur(u);
+            }
+            assert ipt2 != null;
+            InterventionProvider ip2 = new InterventionProvider();
+            ip2.setId(ipt2.getInterventionProvider().getId());
+            ipt2.setInterventionProvider(ip2);
+            interventionProvider.setInterventionProvider(ipt2);
             interventionProviderList.add(interventionProvider);
         });
 
@@ -61,17 +81,15 @@ public class InterventionController {
 
     @PostMapping("/attribuerInterventionTravailleur")
     /*@PreAuthorize("hasRole('CHEF')")*/
-    public ResponseEntity<?> authenticateUser(@RequestBody InterventionProviderTravailleurForm form) {
+    public Boolean attribuerInterventionTravailleur(@RequestBody InterventionProviderTravailleurForm form) {
         InterventionProviderTravailleur iPT = new InterventionProviderTravailleur();
         InterventionProvider interventionProvider = this.interventionProviderRepository.findById(form.getInterventionProvider()).get();
         interventionProvider.setEstAttribue(true);
         this.interventionProviderRepository.save(interventionProvider);
         iPT.setInterventionProvider(interventionProvider);
         iPT.setTravailleur(this.utilisateurRepository.findById(form.getTravailleurID()).get());
-
         iptRepository.save(iPT);
-
-        return ResponseEntity.ok(iPT);
+        return true;
     }
 
     @Transactional
@@ -87,12 +105,16 @@ public class InterventionController {
               InterventionProvider ip = new InterventionProvider();
               ip.setId(i.getInterventionProvider().getId());
               ip.setDescription(i.getInterventionProvider().getDescription());
+              ip.setEstAttribue(i.getInterventionProvider().getEstAttribue());
               Installation installation = new Installation();
               installation.setId(i.getInterventionProvider().getInstallation().getId());
               //installation.setAdress(i.getInterventionProvider().getInstallation().getAdress());
               installation.setTitle(i.getInterventionProvider().getInstallation().getTitle());
               installation.setImage(i.getInterventionProvider().getInstallation().getImage());
               installation.setDescription(i.getInterventionProvider().getInstallation().getDescription());
+              installation.setAdress(i.getInterventionProvider().getInstallation().getAdress());
+              installation.setZipcode(i.getInterventionProvider().getInstallation().getZipcode());
+              installation.setCity(i.getInterventionProvider().getInstallation().getCity());
               Client client = new Client();
               client.setId(i.getInterventionProvider().getInstallation().getClient().getId());
               client.setName(i.getInterventionProvider().getInstallation().getClient().getName());

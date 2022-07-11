@@ -17,4 +17,5 @@ import java.util.List;
 public interface InterventionProviderTravailleurRepository extends JpaRepository<InterventionProviderTravailleur, Integer> {
 
     List<InterventionProviderTravailleur> findByTravailleur(Utilisateur utilisateur);
+    InterventionProviderTravailleur findByInterventionProvider(InterventionProvider ip);
 }
